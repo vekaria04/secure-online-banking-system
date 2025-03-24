@@ -1,6 +1,5 @@
 #include "APIController.h"
 
-
 APIController::APIController(DatabaseConnector* connector, User* u, Account* a, TransactionManager* tm)
    : db(connector), user(u), account(a), txnManager(tm) {}
 
