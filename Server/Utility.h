@@ -1,4 +1,10 @@
-onal>
+#ifndef UTILITY_H
+#define UTILITY_H
+
+
+#include <ctime>
+#include <string>
+#include <functional>
 using namespace std;
 
 
