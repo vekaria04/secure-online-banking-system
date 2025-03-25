@@ -44,6 +44,7 @@ class DatabaseConnector {
 private:
    sqlite3 *db;
    mutex db_mutex;
+   mutex txn_mutex;
    bool executeSQL(const string &sql);
 public:
    DatabaseConnector(const string &dbFile = "banking.db");
