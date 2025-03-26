@@ -89,6 +89,45 @@ int main() {
         json response = { {"balance", bal} };
         res.set_content(response.dump(), "application/json");
     });
+    svr.Post("/deposit", [&](const Request& req, Response& res) {
+        auto body = json::parse(req.body, nullptr, false);
+        if (body.is_discarded()) {
+            res.status = 400;
+            res.set_content("Invalid JSON", "text/plain");
+            return;
+        }
+    
+        int accountId = body["accountId"];
+        double amount = body["amount"];
+    
+        bool success = api.handleTransaction("Deposit", accountId, amount, -1);
+        if (success)
+            res.status = 200;
+        else {
+            res.status = 400;
+            res.set_content("Deposit failed", "text/plain");
+        }
+    });
+    svr.Post("/withdraw", [&](const Request& req, Response& res) {
+        auto body = json::parse(req.body, nullptr, false);
+        if (body.is_discarded()) {
+            res.status = 400;
+            res.set_content("Invalid JSON", "text/plain");
+            return;
+        }
+    
+        int accountId = body["accountId"];
+        double amount = body["amount"];
+    
+        bool success = api.handleTransaction("Withdrawal", accountId, amount, -1);
+        if (success)
+            res.status = 200;
+        else {
+            res.status = 400;
+            res.set_content("Withdrawal failed", "text/plain");
+        }
+    });
+    
 
     svr.Post("/transaction", [&](const Request& req, Response& res) {
         auto body = json::parse(req.body, nullptr, false);

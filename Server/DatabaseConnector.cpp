@@ -218,7 +218,6 @@ AccountData* DatabaseConnector::fetchAccount(int account_id) {
 
 bool DatabaseConnector::updateAccountBalance(int account_id, double newBalance) {
    string sql = "UPDATE Accounts SET balance = ? WHERE account_id = ?;";
-   lock(txn_mutex, db_mutex);
    lock_guard<mutex> lock(db_mutex);
    sqlite3_stmt *stmt;
    int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
@@ -236,7 +235,6 @@ bool DatabaseConnector::updateAccountBalance(int account_id, double newBalance) 
 
 int DatabaseConnector::insertTransaction(int account_id, const string &transaction_type, double amount, time_t timestamp) {
    string sql = "INSERT INTO Transactions (account_id, transaction_type, amount, timestamp) VALUES (?, ?, ?, ?);";
-   lock(db_mutex, txn_mutex);
    lock_guard<mutex> lock(db_mutex);
    sqlite3_stmt *stmt;
    int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
