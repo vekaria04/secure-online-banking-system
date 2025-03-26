@@ -117,41 +117,62 @@ int main() {
     //  LOGIN
     // -------------------------
     svr.Post("/login", [&](const Request& req, Response& res) {
-        auto body = json::parse(req.body, nullptr, false);
-        if (body.is_discarded()) {
-            res.status = 400;
-            res.set_content("Invalid JSON", "text/plain");
-            return;
-        }
-        std::string email = body["email"], password = body["password"];
-        if (!api.handleLogin(email, password)) {
-            res.status = 401;
-            res.set_content("Login failed", "text/plain");
-            return;
-        }
-        UserData* loggedUser = db.fetchUserByEmail(email);
-        if (!loggedUser) {
-            res.status = 401;
-            res.set_content("Login failed: user not found", "text/plain");
-            return;
-        }
-        int userId = loggedUser->user_id;
-        int accountId = getAccountIdByUserId(db, userId);
-        delete loggedUser;
+    auto body = json::parse(req.body, nullptr, false);
+    if (body.is_discarded()) {
+        res.status = 400;
+        res.set_content("Invalid JSON", "text/plain");
+        return;
+    }
 
-        // Generate JWT token
+    std::string email = body["email"], password = body["password"];
+
+    // Hard-coded admin credentials
+    if (email == "admin@bank.com" && password == "admin123") {
         auto token = jwt::create()
             .set_issuer("my-issuer")
             .set_type("JWS")
             .set_audience("my-client")
-            .set_subject(std::to_string(userId))
-            .set_payload_claim("accountId", jwt::claim(std::to_string(accountId)))
+            .set_subject("admin")
+            .set_payload_claim("role", jwt::claim(std::string("admin")))
             .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(1))
             .sign(jwt::algorithm::hs256{JWT_SECRET});
 
-        json response = { {"userId", userId}, {"accountId", accountId}, {"token", token} };
+        json response = { {"role", "admin"}, {"token", token} };
         res.set_content(response.dump(), "application/json");
-    });
+        return;
+    }
+
+    if (!api.handleLogin(email, password)) {
+        res.status = 401;
+        res.set_content("Login failed", "text/plain");
+        return;
+    }
+
+    UserData* loggedUser = db.fetchUserByEmail(email);
+    if (!loggedUser) {
+        res.status = 401;
+        res.set_content("Login failed: user not found", "text/plain");
+        return;
+    }
+
+    int userId = loggedUser->user_id;
+    int accountId = getAccountIdByUserId(db, userId);
+    delete loggedUser;
+
+    auto token = jwt::create()
+        .set_issuer("my-issuer")
+        .set_type("JWS")
+        .set_audience("my-client")
+        .set_subject(std::to_string(userId))
+        .set_payload_claim("accountId", jwt::claim(std::to_string(accountId)))
+        .set_payload_claim("role", jwt::claim(std::string("user")))
+        .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(1))
+        .sign(jwt::algorithm::hs256{JWT_SECRET});
+
+    json response = { {"userId", userId}, {"accountId", accountId}, {"role", "user"}, {"token", token} };
+    res.set_content(response.dump(), "application/json");
+});
+
 
     // -------------------------
     //  BALANCE
@@ -335,6 +356,146 @@ int main() {
             res.set_content("Profile update failed", "text/plain");
         }
     });
+
+    // -------------------------
+    //  ADMIN
+    // -------------------------
+    svr.Get("/admin/users", [&](const Request& req, Response& res) {
+    std::string userId;
+    auto authHeader = req.get_header_value("Authorization");
+    if (authHeader.rfind("Bearer ", 0) != 0) {
+        res.status = 401;
+        res.set_content("Unauthorized", "text/plain");
+        return;
+    }
+
+    std::string token = authHeader.substr(7);
+    try {
+        auto decoded = jwt::decode(token);
+        auto verifier = jwt::verify()
+            .allow_algorithm(jwt::algorithm::hs256{JWT_SECRET})
+            .with_issuer("my-issuer");
+        verifier.verify(decoded);
+
+        auto roleClaim = decoded.get_payload_claim("role");
+        if (roleClaim.as_string() != "admin") {
+            res.status = 403;
+            res.set_content("Forbidden: Admins only", "text/plain");
+            return;
+        }
+
+        // Placeholder logic to fetch and return all users
+        // You’d need to implement db.getAllUsers()
+        vector<UserData*> users = db.getAllUsers(); 
+        json response = json::array();
+        for (auto user : users) {
+            response.push_back({
+                {"user_id", user->user_id},
+                {"name", user->name},
+                {"email", user->email}
+            });
+            delete user;
+        }
+        res.set_content(response.dump(), "application/json");
+    } catch (...) {
+        res.status = 401;
+        res.set_content("Token validation failed", "text/plain");
+    }
+});
+
+svr.Get("/admin/users", [&](const Request& req, Response& res) {
+    if (!validate_admin_jwt(req)) {
+        res.status = 403;
+        res.set_content("Forbidden", "text/plain");
+        return;
+    }
+
+    vector<UserData*> users = db.getAllUsers();
+    json response = json::array();
+    for (auto user : users) {
+        response.push_back({
+            {"user_id", user->user_id},
+            {"name", user->name},
+            {"email", user->email},
+            {"created_at", user->created_at}
+        });
+        delete user;
+    }
+
+    res.set_content(response.dump(), "application/json");
+});
+
+svr.Delete(R"(/admin/user/(\d+))", [&](const Request& req, Response& res) {
+    if (!validate_admin_jwt(req)) {
+        res.status = 403;
+        res.set_content("Forbidden", "text/plain");
+        return;
+    }
+
+    int userId = stoi(req.matches[1]);
+    bool success = db.deleteUserById(userId);
+    res.set_content(success ? "Deleted" : "Failed", "text/plain");
+});
+
+svr.Put(R"(/admin/user/(\d+))", [&](const Request& req, Response& res) {
+    if (!validate_admin_jwt(req)) {
+        res.status = 403;
+        res.set_content("Forbidden", "text/plain");
+        return;
+    }
+
+    int userId = stoi(req.matches[1]);
+    auto body = json::parse(req.body, nullptr, false);
+    if (body.is_discarded()) {
+        res.status = 400;
+        res.set_content("Invalid JSON", "text/plain");
+        return;
+    }
+
+    string name = body["name"];
+    string email = body["email"];
+    bool success = db.updateUserById(userId, name, email);
+    res.set_content(success ? "Updated" : "Failed", "text/plain");
+});
+
+svr.Get(R"(/admin/user/(\d+)/accounts)", [&](const Request& req, Response& res) {
+    if (!validate_admin_jwt(req)) {
+        res.status = 403;
+        res.set_content("Forbidden", "text/plain");
+        return;
+    }
+
+    int userId = stoi(req.matches[1]);
+    vector<AccountData*> accounts = db.getAccountsByUserId(userId);
+    json response = json::array();
+    for (auto acc : accounts) {
+        response.push_back({
+            {"account_id", acc->account_id},
+            {"account_type", acc->account_type},
+            {"balance", acc->balance},
+            {"created_at", acc->created_at}
+        });
+        delete acc;
+    }
+
+    res.set_content(response.dump(), "application/json");
+});
+
+
+    bool validate_admin_jwt(const Request &req) {
+    std::string userId;
+    auto authHeader = req.get_header_value("Authorization");
+    if (authHeader.rfind("Bearer ", 0) != 0) return false;
+    std::string token = authHeader.substr(7);
+
+    try {
+        auto decoded = jwt::decode(token);
+        jwt::verify().allow_algorithm(jwt::algorithm::hs256{JWT_SECRET}).with_issuer("my-issuer").verify(decoded);
+        return decoded.get_payload_claim("role").as_string() == "admin";
+    } catch (...) {
+        return false;
+    }
+}
 
     // -------------------------
     //  ROOT

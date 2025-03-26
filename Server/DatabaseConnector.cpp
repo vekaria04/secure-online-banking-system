@@ -304,3 +304,75 @@ vector<TransactionData> DatabaseConnector::getTransactionsForAccount(int account
    sqlite3_finalize(stmt);
    return history;
 }
+
+vector<UserData*> DatabaseConnector::getAllUsers() {
+    vector<UserData*> users;
+    string sql = "SELECT user_id, name, email, password_hash, created_at FROM Users;";
+    lock_guard<mutex> lock(db_mutex);
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
+        return users;
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        UserData* user = new UserData;
+        user->user_id = sqlite3_column_int(stmt, 0);
+        user->name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        user->email = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        user->password_hash = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+        user->created_at = sqlite3_column_int(stmt, 4);
+        users.push_back(user);
+    }
+    sqlite3_finalize(stmt);
+    return users;
+}
+
+
+bool DatabaseConnector::deleteUserById(int userId) {
+    string sql = "DELETE FROM Users WHERE user_id = ?;";
+    lock_guard<mutex> lock(db_mutex);
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
+        return false;
+
+    sqlite3_bind_int(stmt, 1, userId);
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    return rc == SQLITE_DONE;
+}
+
+bool DatabaseConnector::updateUserById(int userId, const string& name, const string& email) {
+    string sql = "UPDATE Users SET name = ?, email = ? WHERE user_id = ?;";
+    lock_guard<mutex> lock(db_mutex);
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
+        return false;
+
+    sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, email.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 3, userId);
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    return rc == SQLITE_DONE;
+}
+
+vector<AccountData*> DatabaseConnector::getAccountsByUserId(int userId) {
+    vector<AccountData*> accounts;
+    string sql = "SELECT account_id, user_id, account_type, balance, created_at FROM Accounts WHERE user_id = ?;";
+    lock_guard<mutex> lock(db_mutex);
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
+        return accounts;
+
+    sqlite3_bind_int(stmt, 1, userId);
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        AccountData* acc = new AccountData;
+        acc->account_id = sqlite3_column_int(stmt, 0);
+        acc->user_id = sqlite3_column_int(stmt, 1);
+        acc->account_type = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        acc->balance = sqlite3_column_double(stmt, 3);
+        acc->created_at = sqlite3_column_int(stmt, 4);
+        accounts.push_back(acc);
+    }
+    sqlite3_finalize(stmt);
+    return accounts;
+}
