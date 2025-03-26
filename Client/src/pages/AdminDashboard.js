@@ -1,6 +1,4 @@
-// src/AdminDashboard.js
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import {
   Container,
   Typography,
@@ -27,14 +25,16 @@ function AdminDashboard() {
   const token = localStorage.getItem("token");
 
   const fetchUsers = async () => {
-    const res = await axios.get("http://localhost:3001/admin/users", {
+    const res = await fetch("http://localhost:3001/admin/users", {
       headers: { Authorization: `Bearer ${token}` },
     });
-    setUsers(res.data);
+    const data = await res.json();
+    setUsers(data);
   };
 
   const deleteUser = async (userId) => {
-    await axios.delete(`http://localhost:3001/admin/user/${userId}`, {
+    await fetch(`http://localhost:3001/admin/user/${userId}`, {
+      method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
     fetchUsers();
@@ -42,24 +42,26 @@ function AdminDashboard() {
 
   const openEditDialog = async (user) => {
     setSelectedUser({ ...user });
-    const accRes = await axios.get(`http://localhost:3001/admin/user/${user.user_id}/accounts`, {
+    const res = await fetch(`http://localhost:3001/admin/user/${user.user_id}/accounts`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    setAccounts(accRes.data);
+    const accData = await res.json();
+    setAccounts(accData);
     setOpen(true);
   };
 
   const handleSave = async () => {
-    await axios.put(
-      `http://localhost:3001/admin/user/${selectedUser.user_id}`,
-      {
+    await fetch(`http://localhost:3001/admin/user/${selectedUser.user_id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
         name: selectedUser.name,
         email: selectedUser.email,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+      }),
+    });
     setOpen(false);
     fetchUsers();
   };
