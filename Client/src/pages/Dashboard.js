@@ -7,8 +7,6 @@ function Dashboard() {
   const [balance, setBalance] = useState(0);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
-
-  const userId = localStorage.getItem("userId");
   const accountId = localStorage.getItem("accountId");
 
   const fetchBalance = useCallback(async () => {
@@ -21,32 +19,52 @@ function Dashboard() {
   }, [accountId]);
 
   useEffect(() => {
-    if (!userId || !accountId) {
+    if (!localStorage.getItem("token")) {
       navigate("/");
     } else {
       fetchBalance();
     }
-  }, [userId, accountId, navigate, fetchBalance]);
+  }, [fetchBalance, navigate]);
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>Dashboard</Typography>
-      <Typography variant="h6" gutterBottom>Balance: ${balance}</Typography>
-      {message && <Alert severity="info" sx={{ mb: 2 }}>{message}</Alert>}
+      <Typography variant="h4" gutterBottom>
+        Dashboard
+      </Typography>
+      <Typography variant="h6" gutterBottom>
+        Your Balance: ${balance}
+      </Typography>
+      {message && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          {message}
+        </Alert>
+      )}
       <Box sx={{ mb: 3 }}>
         <Grid container spacing={2}>
           <Grid item xs={4}>
-            <Button variant="contained" fullWidth onClick={() => navigate("/deposit")}>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={() => navigate("/deposit")}
+            >
               Deposit
             </Button>
           </Grid>
           <Grid item xs={4}>
-            <Button variant="contained" fullWidth onClick={() => navigate("/withdraw")}>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={() => navigate("/withdraw")}
+            >
               Withdraw
             </Button>
           </Grid>
           <Grid item xs={4}>
-            <Button variant="contained" fullWidth onClick={() => navigate("/transfer")}>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={() => navigate("/transfer")}
+            >
               Transfer
             </Button>
           </Grid>
