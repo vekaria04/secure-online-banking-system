@@ -18,6 +18,8 @@ public:
    UserManager(DatabaseConnector* connector, User* u);
    bool createUser(const string &name, const string &email, const string &password);
    bool authenticateUser(const string &email, const string &password);
+   bool updateProfile(const string &name, const string &email, int userId);
+
 };
 
 

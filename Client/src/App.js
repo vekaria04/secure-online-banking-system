@@ -11,6 +11,7 @@ import Transfer from "./pages/Transfer";
 import TransactionHistory from "./pages/TransactionHistory";
 import UpdatePassword from "./pages/UpdatePassword";
 import ProfileUpdate from "./pages/ProfileUpdate";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   const navigate = useNavigate();

@@ -12,3 +12,8 @@ bool UserManager::createUser(const string &name, const string &email, const stri
 bool UserManager::authenticateUser(const string &email, const string &password) {
    return user->authenticate(email, password);
 }
+bool UserManager::updateProfile(const string &name, const string &email, int userId) {
+   return user->updateProfile(name, email, userId);
+}
+
+

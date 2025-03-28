@@ -7,20 +7,17 @@
 #include "UserManager.h"
 #include "json.hpp"
 #include <iostream>
-
-// Include jwt-cpp
-#define JWT_DISABLE_BASE64
-#define JWT_DISABLE_PICOJSON
-#include "jwt-cpp/jwt.h"
 #include <chrono>
+#include "jwt-cpp/jwt.h"
 
 using json = nlohmann::json;
 using namespace httplib;
+using jwt_clock = jwt::default_clock;
+using jwt_traits = jwt::traits::kazuho_picojson;
 
-// A secret key for signing JWTs (in production, store this securely)
+
 static const std::string JWT_SECRET = "my_super_secret_key";
 
-// Helper function to fetch the first account ID for a user.
 int getAccountIdByUserId(DatabaseConnector &db, int user_id) {
     sqlite3* dbHandle = db.getDB();
     int account_id = -1;
@@ -36,15 +33,13 @@ int getAccountIdByUserId(DatabaseConnector &db, int user_id) {
     return account_id;
 }
 
-// Validates the JWT from the "Authorization: Bearer <token>" header.
-// Returns true if valid, and sets userId to the "sub" claim from the token.
 bool validate_jwt(const Request &req, std::string &userId) {
     auto authHeader = req.get_header_value("Authorization");
     if (authHeader.rfind("Bearer ", 0) != 0) {
         std::cerr << "Missing or invalid Authorization header.\n";
         return false;
     }
-    std::string token = authHeader.substr(7); // remove "Bearer "
+    std::string token = authHeader.substr(7);
 
     try {
         auto decoded = jwt::decode(token);
@@ -52,12 +47,28 @@ bool validate_jwt(const Request &req, std::string &userId) {
             .allow_algorithm(jwt::algorithm::hs256{JWT_SECRET})
             .with_issuer("my-issuer");
         verifier.verify(decoded);
-
-        // Extract the subject ("sub") as the user ID
         userId = decoded.get_subject();
         return true;
     } catch (const std::exception &e) {
         std::cerr << "JWT validation failed: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool validate_admin_jwt(const httplib::Request &req) {
+    auto authHeader = req.get_header_value("Authorization");
+    if (authHeader.rfind("Bearer ", 0) != 0) return false;
+    std::string token = authHeader.substr(7);
+
+    try {
+        auto decoded = jwt::decode(token);
+        jwt::verify()
+            .allow_algorithm(jwt::algorithm::hs256{JWT_SECRET})
+            .with_issuer("my-issuer")
+            .verify(decoded);
+
+        return decoded.get_payload_claim("role").as_string() == "admin";
+    } catch (...) {
         return false;
     }
 }
@@ -128,16 +139,20 @@ int main() {
 
     // Hard-coded admin credentials
     if (email == "admin@bank.com" && password == "admin123") {
-        auto token = jwt::create()
-            .set_issuer("my-issuer")
-            .set_type("JWS")
-            .set_audience("my-client")
-            .set_subject("admin")
-            .set_payload_claim("role", jwt::claim(std::string("admin")))
-            .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(1))
-            .sign(jwt::algorithm::hs256{JWT_SECRET});
+        auto token = jwt::create<jwt_clock, jwt_traits>(jwt_clock{})
+        .set_issuer("my-issuer")
+        .set_type("JWS")
+        .set_audience("my-client")
+        .set_subject("admin")
+        .set_payload_claim("role", jwt::claim(std::string("admin")))
+        .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(1))
+        .sign(jwt::algorithm::hs256{JWT_SECRET});
+    
 
-        json response = { {"role", "admin"}, {"token", token} };
+            json response;
+            response["role"] = "admin";
+            response["token"] = token;
+            
         res.set_content(response.dump(), "application/json");
         return;
     }
@@ -480,22 +495,6 @@ svr.Get(R"(/admin/user/(\d+)/accounts)", [&](const Request& req, Response& res) 
 
     res.set_content(response.dump(), "application/json");
 });
-
-
-    bool validate_admin_jwt(const Request &req) {
-    std::string userId;
-    auto authHeader = req.get_header_value("Authorization");
-    if (authHeader.rfind("Bearer ", 0) != 0) return false;
-    std::string token = authHeader.substr(7);
-
-    try {
-        auto decoded = jwt::decode(token);
-        jwt::verify().allow_algorithm(jwt::algorithm::hs256{JWT_SECRET}).with_issuer("my-issuer").verify(decoded);
-        return decoded.get_payload_claim("role").as_string() == "admin";
-    } catch (...) {
-        return false;
-    }
-}
 
     // -------------------------
     //  ROOT
