@@ -20,7 +20,7 @@ function Login() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("http://localhost:3001/login", {
+      const res = await axios.post("/login", {
         email,
         password,
       });

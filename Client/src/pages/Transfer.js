@@ -15,7 +15,7 @@ function Transfer() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:3001/balance/${accountId}`);
+      const res = await axios.get(`/balance/${accountId}`);
       setBalance(res.data.balance);
     } catch (err) {
       console.error("Failed to fetch balance", err);
@@ -33,7 +33,7 @@ function Transfer() {
     setMessage("");
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:3001/transaction",
+      await axios.post("/transaction",
         {
           type: "Transfer",
           accountId: parseInt(accountId),

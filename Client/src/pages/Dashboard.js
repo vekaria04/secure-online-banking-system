@@ -11,7 +11,7 @@ function Dashboard() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:3001/balance/${accountId}`);
+      const res = await axios.get(`/balance/${accountId}`);
       setBalance(res.data.balance);
     } catch (err) {
       setMessage("Error fetching balance");

@@ -16,7 +16,7 @@ function ProfileUpdate() {
     setMessage("");
     try {
       await axios.post(
-        "http://localhost:3001/update-profile",
+        "/update-profile",
         {
           userId: parseInt(userId),
           name,
@@ -40,10 +40,10 @@ function ProfileUpdate() {
       <Typography variant="h4" gutterBottom>Update Profile</Typography>
       {message && <Alert severity="info" sx={{ mb: 2 }}>{message}</Alert>}
       <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-         <TextField label="Name" value={name} onChange={(e)=>setName(e.target.value)} required />
-         <TextField label="Email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} required />
-         <Button variant="contained" type="submit">Update Profile</Button>
-         <Button variant="outlined" onClick={()=>navigate("/dashboard")}>Back to Dashboard</Button>
+        <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+        <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <Button variant="contained" type="submit">Update Profile</Button>
+        <Button variant="outlined" onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
       </Box>
     </Container>
   );

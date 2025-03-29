@@ -8,7 +8,7 @@ function TransactionHistory() {
 
   const fetchTransactions = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:3001/transactions/${accountId}`);
+      const res = await axios.get(`/transactions/${accountId}`);
       // Sort transactions in descending order by timestamp
       const sortedTxns = res.data.sort((a, b) => b.timestamp - a.timestamp);
       setTransactions(sortedTxns);

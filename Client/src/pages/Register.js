@@ -14,7 +14,7 @@ function Register() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("http://localhost:3001/register", {
+      const res = await axios.post("/register", {
         name,
         email,
         password

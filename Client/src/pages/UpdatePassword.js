@@ -18,7 +18,7 @@ function UpdatePassword() {
         try {
             const token = localStorage.getItem("token");
             await axios.post(
-                "http://localhost:3001/update-password",
+                "/update-password",
                 {
                     userId: parseInt(userId),
                     oldPass,

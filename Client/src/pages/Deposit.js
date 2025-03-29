@@ -12,7 +12,7 @@ function Deposit() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:3001/balance/${accountId}`);
+      const res = await axios.get(`/balance/${accountId}`);
       setBalance(res.data.balance);
     } catch (err) {
       console.error("Failed to fetch balance", err);
@@ -29,7 +29,7 @@ function Deposit() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:3001/deposit",
+        "/deposit",
         {
           accountId: parseInt(accountId),
           amount: parseFloat(amount)
