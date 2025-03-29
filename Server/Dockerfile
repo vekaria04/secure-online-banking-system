@@ -11,7 +11,7 @@ WORKDIR /app
 COPY . .
 
 # Compile the server
-RUN g++ -std=c++17 Main.cpp Account.cpp APIController.cpp Transaction.cpp TransactionManager.cpp User.cpp UserManager.cpp DatabaseConnector.cpp -o server -lpthread -lssl -lcrypto -lsqlite3
+RUN g++ -std=c++17 -I./third_party/jwt-cpp/include Main.cpp Account.cpp APIController.cpp Transaction.cpp TransactionManager.cpp User.cpp UserManager.cpp DatabaseConnector.cpp -o server -lpthread -lssl -lcrypto -lsqlite3
 
 # Expose the port your server runs on
 EXPOSE 8080
