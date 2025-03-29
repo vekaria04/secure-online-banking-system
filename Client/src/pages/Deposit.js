@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Container, Typography, TextField, Button, Alert, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import getBaseUrl from "./utils/getBaseUrl";
 
+const BASE = getBaseUrl();
 function Deposit() {
   const [balance, setBalance] = useState(0);
   const [amount, setAmount] = useState("");
@@ -12,7 +14,7 @@ function Deposit() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await axios.get(`/balance/${accountId}`);
+      const res = await axios.get(`${BASE}/balance/${accountId}`);
       setBalance(res.data.balance);
     } catch (err) {
       console.error("Failed to fetch balance", err);
@@ -29,7 +31,7 @@ function Deposit() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "/deposit",
+        `${BASE}/deposit`,
         {
           accountId: parseInt(accountId),
           amount: parseFloat(amount)

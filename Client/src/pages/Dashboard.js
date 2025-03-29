@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Container, Typography, Button, Alert, Box, Grid } from "@mui/material";
+import getBaseUrl from "./utils/getBaseUrl";
 
+const BASE = getBaseUrl();
 function Dashboard() {
   const [balance, setBalance] = useState(0);
   const [message, setMessage] = useState("");
@@ -11,7 +13,7 @@ function Dashboard() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await axios.get(`/balance/${accountId}`);
+      const res = await axios.get(`${BASE}/balance/${accountId}`);
       setBalance(res.data.balance);
     } catch (err) {
       setMessage("Error fetching balance");

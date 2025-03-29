@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Container, TextField, Button, Typography, Alert, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import getBaseUrl from "./utils/getBaseUrl";
 
+const BASE = getBaseUrl();
 function ProfileUpdate() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -16,7 +18,7 @@ function ProfileUpdate() {
     setMessage("");
     try {
       await axios.post(
-        "/update-profile",
+        `${BASE}/update-profile`,
         {
           userId: parseInt(userId),
           name,

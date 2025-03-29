@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Container, TextField, Button, Typography, Alert, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import getBaseUrl from "./utils/getBaseUrl";
 
+const BASE = getBaseUrl();
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -12,7 +14,7 @@ function ForgotPassword() {
     e.preventDefault();
     setMessage("");
     try {
-      await axios.post("/forgot-password", { email });
+      await axios.post(`${BASE}/forgot-password`, { email });
       setMessage("Password reset link sent to your email.");
     } catch (err) {
       setMessage("Failed to send reset link.");

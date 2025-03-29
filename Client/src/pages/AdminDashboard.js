@@ -15,6 +15,9 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import getBaseUrl from "./utils/getBaseUrl";
+
+const BASE = getBaseUrl();
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
@@ -25,7 +28,7 @@ function AdminDashboard() {
   const token = localStorage.getItem("token");
 
   const fetchUsers = async () => {
-    const res = await fetch("/admin/users", {
+    const res = await fetch(`${BASE}/admin/users`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -33,7 +36,7 @@ function AdminDashboard() {
   };
 
   const deleteUser = async (userId) => {
-    await fetch(`/admin/user/${userId}`, {
+    await fetch(`${BASE}/admin/user/${userId}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -42,7 +45,7 @@ function AdminDashboard() {
 
   const openEditDialog = async (user) => {
     setSelectedUser({ ...user });
-    const res = await fetch(`/admin/user/${user.user_id}/accounts`, {
+    const res = await fetch(`${BASE}/admin/user/${user.user_id}/accounts`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const accData = await res.json();
@@ -51,7 +54,7 @@ function AdminDashboard() {
   };
 
   const handleSave = async () => {
-    await fetch(`/admin/user/${selectedUser.user_id}`, {
+    await fetch(`${BASE}/admin/user/${selectedUser.user_id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

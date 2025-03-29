@@ -3,7 +3,9 @@ import axios from "axios";
 import { Container, TextField, Button, Typography, Alert, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
+import getBaseUrl from "./utils/getBaseUrl";
 
+const BASE = getBaseUrl();
 function UpdatePassword() {
     const [oldPass, setOldPass] = useState("");
     const [newPass, setNewPass] = useState("");
@@ -18,7 +20,7 @@ function UpdatePassword() {
         try {
             const token = localStorage.getItem("token");
             await axios.post(
-                "/update-password",
+                `${BASE}/update-password`,
                 {
                     userId: parseInt(userId),
                     oldPass,

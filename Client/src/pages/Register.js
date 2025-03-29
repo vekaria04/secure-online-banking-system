@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Container, TextField, Button, Typography, Alert, Box } from "@mui/material";
+import getBaseUrl from "./utils/getBaseUrl";
 
+const BASE = getBaseUrl();
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,7 +16,7 @@ function Register() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("/register", {
+      const res = await axios.post(`${BASE}/register`, {
         name,
         email,
         password

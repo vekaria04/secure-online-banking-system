@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper } from "@mui/material";
+import getBaseUrl from "./utils/getBaseUrl";
 
+const BASE = getBaseUrl();
 function TransactionHistory() {
   const [transactions, setTransactions] = useState([]);
   const accountId = localStorage.getItem("accountId");
 
   const fetchTransactions = useCallback(async () => {
     try {
-      const res = await axios.get(`/transactions/${accountId}`);
+      const res = await axios.get(`${BASE}/transactions/${accountId}`);
       // Sort transactions in descending order by timestamp
       const sortedTxns = res.data.sort((a, b) => b.timestamp - a.timestamp);
       setTransactions(sortedTxns);

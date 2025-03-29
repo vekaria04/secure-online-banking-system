@@ -9,7 +9,9 @@ import {
   Alert,
   Box,
 } from "@mui/material";
+import getBaseUrl from "./utils/getBaseUrl";
 
+const BASE = getBaseUrl();
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +22,7 @@ function Login() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("/login", {
+      const res = await axios.post(`${BASE}/login`, {
         email,
         password,
       });

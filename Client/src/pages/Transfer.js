@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Container, Typography, TextField, Button, Alert, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import getBaseUrl from "./utils/getBaseUrl";
 
+const BASE = getBaseUrl();
 
 function Transfer() {
   const [balance, setBalance] = useState(0);
@@ -15,7 +17,7 @@ function Transfer() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await axios.get(`/balance/${accountId}`);
+      const res = await axios.get(`${BASE}/balance/${accountId}`);
       setBalance(res.data.balance);
     } catch (err) {
       console.error("Failed to fetch balance", err);
@@ -33,7 +35,7 @@ function Transfer() {
     setMessage("");
     try {
       const token = localStorage.getItem("token");
-      await axios.post("/transaction",
+      await axios.post(`${BASE}/transaction`,
         {
           type: "Transfer",
           accountId: parseInt(accountId),
