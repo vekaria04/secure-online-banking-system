@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Container, Typography, TextField, Button, Alert, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import getBaseUrl from "./utils/getBaseUrl";
 
-const BASE = getBaseUrl();
+const BASE = process.env.REACT_APP_API_BASE_URL || "";
 
 function Withdraw() {
   const [balance, setBalance] = useState(0);

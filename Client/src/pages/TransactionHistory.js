@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper } from "@mui/material";
-import getBaseUrl from "./utils/getBaseUrl";
 
-const BASE = getBaseUrl();
+const BASE = process.env.REACT_APP_API_BASE_URL || "";
 function TransactionHistory() {
   const [transactions, setTransactions] = useState([]);
   const accountId = localStorage.getItem("accountId");

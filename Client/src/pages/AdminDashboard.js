@@ -15,9 +15,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import getBaseUrl from "./utils/getBaseUrl";
-
-const BASE = getBaseUrl();
+const BASE = process.env.REACT_APP_API_BASE_URL || "";
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);

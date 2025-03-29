@@ -9,9 +9,8 @@ import {
   Alert,
   Box,
 } from "@mui/material";
-import getBaseUrl from "./utils/getBaseUrl";
 
-const BASE = getBaseUrl();
+const BASE = process.env.REACT_APP_API_BASE_URL || "";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

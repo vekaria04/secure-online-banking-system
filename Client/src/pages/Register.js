@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Container, TextField, Button, Typography, Alert, Box } from "@mui/material";
-import getBaseUrl from "./utils/getBaseUrl";
 
-const BASE = getBaseUrl();
+const BASE = process.env.REACT_APP_API_BASE_URL || "";
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

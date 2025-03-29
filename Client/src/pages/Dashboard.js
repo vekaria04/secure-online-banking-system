@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Container, Typography, Button, Alert, Box, Grid } from "@mui/material";
-import getBaseUrl from "./utils/getBaseUrl";
 
-const BASE = getBaseUrl();
+const BASE = process.env.REACT_APP_API_BASE_URL || "";
 function Dashboard() {
   const [balance, setBalance] = useState(0);
   const [message, setMessage] = useState("");
