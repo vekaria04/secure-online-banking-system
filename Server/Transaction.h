@@ -6,6 +6,11 @@
 #include "DatabaseConnector.h"
 #include "Account.h"
 #include "Utility.h"
+#include <unordered_map>
+#include <mutex>
+
+static std::unordered_map<int, std::mutex> accountLocks;
+
 
 
 using namespace std;
